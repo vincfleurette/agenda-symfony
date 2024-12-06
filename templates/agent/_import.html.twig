@@ -1,0 +1,24 @@
+{# templates/agent/_import.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Importation
+{% endblock %}
+
+{% block body %}
+    <h1>Importer un fichier Excel</h1>
+
+    <turbo-frame id="import_frame">
+        {{ form_start(form, { 'attr': { 'data-turbo-frame': 'import_frame' } }) }}
+        {{ form_row(form.file) }}
+        {{ form_row(form.submit) }}
+        {{ form_end(form) }}
+    </turbo-frame>
+
+    {# Afficher le message de succès dans un Turbo Frame séparé si besoin #}
+    {% for message in app.flashes('success') %}
+        <turbo-frame id="import_success_frame">
+            <p>{{ message }}</p>
+        </turbo-frame>
+    {% endfor %}
+{% endblock %}

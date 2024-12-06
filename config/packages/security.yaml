@@ -1,0 +1,48 @@
+security:
+  password_hashers:
+    App\Entity\User:
+      algorithm: auto
+
+  providers:
+    # used to reload user from session & other features (e.g. switch_user)
+    app_user_provider:
+      entity:
+        class: App\Entity\User
+        property: username
+
+  firewalls:
+    dev:
+      pattern: ^/(_(profiler|wdt)|css|images|js)/
+      security: false
+
+    main:
+      lazy: true
+      provider: app_user_provider
+      form_login:
+        login_path: login
+        check_path: login
+      remember_me:
+        secret: "%kernel.secret%" # Clé secrète pour signer le jeton
+        lifetime: 604800 # Durée de vie en secondes (1 semaine ici)
+        path: "/" # Chemin du cookie
+        token_provider: app.rememberme_token_provider # Fournisseur de tokens
+        name: REMEMBERME
+      logout:
+        path: logout
+
+  access_control:
+    - { path: ^/admin, roles: ROLE_AGENT }
+    - { path: ^/public, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+
+when@test:
+  security:
+    password_hashers:
+      # By default, password hashers are resource intensive and take time. This is
+      # important to generate secure password hashes. In tests however, secure hashes
+      # are not important, waste resources and increase test times. The following
+      # reduces the work factor to the lowest possible values.
+      Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+        algorithm: auto
+        cost: 4 # Lowest possible value for bcrypt
+        time_cost: 3 # Lowest possible value for argon
+        memory_cost: 10 # Lowest possible value for argon

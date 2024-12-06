@@ -1,0 +1,10 @@
+{# templates/agent/streams/disponibilite_update.stream.html.twig #}
+<turbo-stream action="replace" target="dispo_{{ disponibilite.id }}">
+    <template>
+        <tr id="dispo_{{ disponibilite.id }}">
+            <td>{{ disponibilite.spv.name }}</td>
+            <td>{{ disponibilite.date|date("Y-m-d") }}</td>
+            <td>{{ disponibilite.type }}</td>
+        </tr>
+    </template>
+</turbo-stream>

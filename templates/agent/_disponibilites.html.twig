@@ -1,0 +1,19 @@
+{# templates/agent/_disponibilites.html.twig #}
+<table>
+    <thead>
+        <tr>
+            <th>SPV</th>
+            <th>Date</th>
+            <th>Disponibilité</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dispo in disponibilites %}
+            <tr>
+                <td>{{ dispo.spv.name }}</td>
+                <td>{{ dispo.date|date("Y-m-d") }}</td>
+                <td>{{ dispo.type }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
