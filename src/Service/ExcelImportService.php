@@ -4,9 +4,7 @@ namespace App\Service;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExcelImportService
 {
@@ -24,7 +22,7 @@ class ExcelImportService
     {
         return $this->processSpreadsheet(
             $filePath,
-            fn($spreadsheet) => $spreadsheet->getSheetNames()
+            fn ($spreadsheet) => $spreadsheet->getSheetNames()
         );
     }
 
@@ -33,13 +31,14 @@ class ExcelImportService
      */
     public function importAndSortAvailabilityData(
         string $filePath,
-        int $sheetIndex
+        int $sheetIndex,
     ): array {
         return $this->processSpreadsheet($filePath, function (
-            $spreadsheet
+            $spreadsheet,
         ) use ($sheetIndex) {
             $sheet = $this->validateSheetIndex($spreadsheet, $sheetIndex);
-            $rawData = $this->extractAvailabilityData($sheet);
+            $rawData = $this->extractAvailabilityData($sheet, $sheetIndex);
+
             return $this->preprocessDayData($rawData);
         });
     }
@@ -51,6 +50,7 @@ class ExcelImportService
     {
         try {
             $spreadsheet = IOFactory::load($filePath);
+
             return $callback($spreadsheet);
         } catch (\Exception $e) {
             $this->logger->error(
@@ -67,44 +67,35 @@ class ExcelImportService
     {
         $sheetNames = $spreadsheet->getSheetNames();
         if (!array_key_exists($sheetIndex, $sheetNames)) {
-            throw new \Exception(
-                sprintf(
-                    "La feuille spécifiée avec l'index (%d) n'existe pas. Feuilles disponibles : %s",
-                    $sheetIndex,
-                    json_encode($sheetNames)
-                )
-            );
+            throw new \Exception(sprintf("La feuille spécifiée avec l'index (%d) n'existe pas. Feuilles disponibles : %s", $sheetIndex, json_encode($sheetNames)));
         }
 
         $sheet = $spreadsheet->getSheetByName($sheetNames[$sheetIndex]);
         if (!$sheet) {
-            throw new \Exception(
-                "Impossible de charger la feuille spécifiée : " .
-                    $sheetNames[$sheetIndex]
-            );
+            throw new \Exception('Impossible de charger la feuille spécifiée : '.$sheetNames[$sheetIndex]);
         }
 
-        //$this->logger->info("Analyse de la feuille : {$sheetNames[$sheetIndex]}");
+        // $this->logger->info("Analyse de la feuille : {$sheetNames[$sheetIndex]}");
         return $sheet;
     }
 
     /**
      * Extract availability data from a specific sheet.
      */
-    private function extractAvailabilityData($sheet): array
+    private function extractAvailabilityData($sheet, int $sheetIndex): array
     {
         $data = [];
         $startRow = 5; // SPV names start from row 5
-        $nameColumn = "A"; // SPV names column
-        $firstDateColumn = "C"; // First date column
+        $nameColumn = 'A'; // SPV names column
+        $firstDateColumn = 'C'; // First date column
 
-        $days = $this->extractDayHeaders($sheet, $firstDateColumn);
+        $days = $this->extractDayHeaders($sheet, $firstDateColumn, $sheetIndex);
 
         foreach ($sheet->getRowIterator($startRow) as $row) {
             $rowIndex = $row->getRowIndex();
             $name = $sheet->getCell("{$nameColumn}{$rowIndex}")->getValue();
 
-            if (!$name || strtolower(trim($name)) === "desiderata équipe :") {
+            if (!$name || 'desiderata équipe :' === strtolower(trim($name))) {
                 continue;
             }
 
@@ -112,11 +103,11 @@ class ExcelImportService
                 $cell = $sheet->getCell("{$columnIndex}{$rowIndex}");
                 $value = $cell->getValue();
 
-                if ($value === null || $value === "") {
+                if (null === $value || '' === $value) {
                     continue;
                 }
 
-                $day["dispo"][] = $this->createDispoEntry(
+                $day['dispo'][] = $this->createDispoEntry(
                     $name,
                     $value,
                     $sheet,
@@ -131,29 +122,79 @@ class ExcelImportService
     /**
      * Extract day headers (number, name, team) from the sheet.
      */
-    private function extractDayHeaders($sheet, string $firstDateColumn): array
-    {
+    private function extractDayHeaders(
+        $sheet,
+        string $firstDateColumn,
+        int $sheetIndex,
+    ): array {
         $headers = [];
+        $year = date('Y'); // Année actuelle, ajustez si nécessaire
 
         foreach ($sheet->getColumnIterator($firstDateColumn) as $column) {
             $columnIndex = $column->getColumnIndex();
             $dayNumber = $sheet->getCell("{$columnIndex}4")->getValue();
-            $dayName = $sheet->getCell("{$columnIndex}3")->getValue();
             $team = $sheet->getCell("{$columnIndex}2")->getValue();
 
-            if ($dayNumber && $dayName && $team) {
-                $headers[$columnIndex] = [
-                    "num" => (int) $dayNumber,
-                    "jour" => $dayName,
-                    "equipe" => $team,
-                    "dispo" => [],
-                ];
-            } else {
-                break;
+            // Vérifier si le numéro du jour est valide
+            if (empty($dayNumber) || !is_numeric($dayNumber)) {
+                /*$this->logger->error(
+                    "Numéro de jour invalide ou absent à la colonne {$columnIndex}."
+                );*/
+                continue; // Ignorer cette colonne
             }
+
+            // Créer la date complète
+            $dateString = $this->generateFullDate(
+                $year,
+                $sheetIndex,
+                (int) $dayNumber
+            );
+
+            $headers[$columnIndex] = [
+                'date' => $dateString,
+                'equipe' => $team,
+                'dispo' => [],
+            ];
         }
 
         return $headers;
+    }
+
+    /**
+     * Générer une date complète (nom du jour, numéro du jour, mois) en français
+     * avec IntlDateFormatter.
+     */
+    private function generateFullDate(
+        string $year,
+        int $monthIndex,
+        int $dayNumber,
+    ): string {
+        if (empty($dayNumber) || $dayNumber < 1 || $dayNumber > 31) {
+            throw new \InvalidArgumentException("Le numéro du jour ({$dayNumber}) est invalide.");
+        }
+
+        // Créer une instance de DateTime
+        $date = \DateTime::createFromFormat(
+            'Y-n-j',
+            "{$year}-{$monthIndex}-{$dayNumber}"
+        );
+        if (!$date) {
+            throw new \Exception("Date invalide générée avec : Année={$year}, Mois={$monthIndex}, Jour={$dayNumber}");
+        }
+
+        // Configurer IntlDateFormatter pour le français
+        $formatter = new \IntlDateFormatter(
+            'fr_FR', // Locale française
+            \IntlDateFormatter::FULL, // Style complet
+            \IntlDateFormatter::NONE, // Pas d'heure
+            'UTC', // Fuseau horaire
+            \IntlDateFormatter::GREGORIAN // Calendrier grégorien
+        );
+
+        // Modifier le format pour afficher le jour, le numéro et le mois
+        $formatter->setPattern('EEEE d MMMM');
+
+        return $formatter->format($date);
     }
 
     /**
@@ -163,22 +204,22 @@ class ExcelImportService
         string $name,
         $value,
         $sheet,
-        string $cellReference
+        string $cellReference,
     ): array {
         $entry = [
-            "nom spv" => $name,
-            "value" => is_numeric($value) ? (float) $value : 0,
-            "partDay" => $value === 0.5,
-            "color" => null,
+            'nom spv' => $name,
+            'value' => is_numeric($value) ? (float) $value : 0,
+            'partDay' => 0.5 === $value,
+            'color' => null,
         ];
 
-        if ($value === 0.5) {
+        if (0.5 === $value) {
             $style = $sheet->getStyle($cellReference);
             $color = $style
                 ->getFill()
                 ->getStartColor()
                 ->getRGB();
-            $entry["color"] = $color ? "#{$color}" : null;
+            $entry['color'] = $color ? "#{$color}" : null;
         }
 
         return $entry;
@@ -195,13 +236,13 @@ class ExcelImportService
             $halfDayOrange = [];
             $otherHalfDay = [];
 
-            foreach ($day["dispo"] as $spv) {
-                if ($spv["value"] === 1.0) {
+            foreach ($day['dispo'] as $spv) {
+                if (1.0 === $spv['value']) {
                     $fullDay[] = $spv;
-                } elseif ($spv["value"] === 0.5) {
-                    if ($spv["color"] === "#00B0F0") {
+                } elseif (0.5 === $spv['value']) {
+                    if ('#00B0F0' === $spv['color']) {
                         $halfDayBlue[] = $spv;
-                    } elseif ($spv["color"] === "#F79646") {
+                    } elseif ('#F79646' === $spv['color']) {
                         $halfDayOrange[] = $spv;
                     } else {
                         $otherHalfDay[] = $spv; // Handle any other colors
@@ -212,7 +253,7 @@ class ExcelImportService
             // Interleave halfDayBlue and halfDayOrange
             $interleavedHalfDay = [];
             $maxHalfDay = max(count($halfDayBlue), count($halfDayOrange));
-            for ($i = 0; $i < $maxHalfDay; $i++) {
+            for ($i = 0; $i < $maxHalfDay; ++$i) {
                 if (isset($halfDayBlue[$i])) {
                     $interleavedHalfDay[] = $halfDayBlue[$i];
                 }
@@ -228,9 +269,9 @@ class ExcelImportService
             );
 
             // Replace 'dispo' with the sorted structure
-            $day["sortedDispo"] = [
-                "fullDay" => $fullDay,
-                "halfDay" => $interleavedHalfDay,
+            $day['sortedDispo'] = [
+                'fullDay' => $fullDay,
+                'halfDay' => $interleavedHalfDay,
             ];
         }
 

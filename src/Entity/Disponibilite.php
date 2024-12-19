@@ -4,26 +4,26 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-use App\Enum\DisponibiliteType;
 use App\Entity\Traits\UuidTrait;
+use App\Enum\DisponibiliteType;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 class Disponibilite
 {
     use UuidTrait;
 
-    #[ORM\Column(type: "date")]
+    #[ORM\Column(type: 'date')]
     private \DateTimeInterface $date;
 
-    #[ORM\Column(type: "string", enumType: DisponibiliteType::class)]
+    #[ORM\Column(type: 'string', enumType: DisponibiliteType::class)]
     private DisponibiliteType $type;
 
-    #[ORM\ManyToOne(targetEntity: SPV::class, inversedBy: "disponibilites")]
+    #[ORM\ManyToOne(targetEntity: SPV::class, inversedBy: 'disponibilites')]
     #[
         ORM\JoinColumn(
-            name: "spv_uuid",
-            referencedColumnName: "uuid",
+            name: 'spv_uuid',
+            referencedColumnName: 'uuid',
             nullable: false
         )
     ]
@@ -39,6 +39,7 @@ class Disponibilite
     public function setDate(\DateTimeInterface $date): self
     {
         $this->date = $date;
+
         return $this;
     }
 
@@ -50,6 +51,7 @@ class Disponibilite
     public function setType(DisponibiliteType $type): self
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -61,6 +63,7 @@ class Disponibilite
     public function setSpv(SPV $spv): self
     {
         $this->spv = $spv;
+
         return $this;
     }
 }

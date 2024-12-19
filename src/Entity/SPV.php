@@ -2,11 +2,11 @@
 
 namespace App\Entity;
 
+use App\Entity\Traits\UuidTrait;
 use App\Repository\SPVRepository;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use App\Entity\Traits\UuidTrait;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SPVRepository::class)]
 class SPV
@@ -27,9 +27,9 @@ class SPV
 
     #[
         ORM\OneToMany(
-            mappedBy: "spv",
+            mappedBy: 'spv',
             targetEntity: Disponibilite::class,
-            cascade: ["persist", "remove"]
+            cascade: ['persist', 'remove']
         )
     ]
     private Collection $disponibilites;

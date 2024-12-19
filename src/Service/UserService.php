@@ -17,7 +17,7 @@ class UserService
     public function createUser(
         string $username,
         string $password,
-        string $type
+        string $type,
     ): User {
         $user = new User();
         $user->setUsername($username);
@@ -29,12 +29,13 @@ class UserService
 
         return $user;
     }
+
     public function createAgentUser(string $username, string $password): User
     {
         $user = new User();
         $user->setUsername($username);
         $user->setPassword(password_hash($password, PASSWORD_BCRYPT));
-        $user->setRoles(["ROLE_AGENT"]);
+        $user->setRoles(['ROLE_AGENT']);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
@@ -47,13 +48,14 @@ class UserService
         $user = new User();
         $user->setUsername($username);
         $user->setPassword(password_hash($password, PASSWORD_BCRYPT));
-        $user->setRoles(["ROLE_SPV"]);
+        $user->setRoles(['ROLE_SPV']);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
         return $user;
     }
+
     public function assignRole(User $user, string $role): void
     {
         $roles = $user->getRoles();
