@@ -2,16 +2,23 @@
 
 {% extends 'base.html.twig' %}
 
-{% block title %}Importation
+{% block title %}
+    {{ 'SPV_Availability_Management'|trans }}
 {% endblock %}
 
 {% block body %}
-    <h1>Importer un fichier Excel</h1>
 
     <turbo-frame id="import_frame">
-        {{ form_start(form, { 'attr': { 'data-turbo-frame': 'import_frame' } }) }}
-        {{ form_row(form.file) }}
-        {{ form_row(form.submit) }}
+        <h1 class="text-body-emphasis">{{ 'Import_an_Excel_file'|trans }}</h1>
+        <p class="fs-5 col-md-8">Quickly and easily get started with Bootstrap's compiled, production-ready files with this barebones example featuring some basic HTML and helpful links. Download all our examples to get started.</p>
+        {{ form_start(form, { 'attr': { 'data-turbo-frame': 'import_frame', 'class': 'row g-3' } }) }}
+        <div class="input-group mb-3">
+            {{ form_label(form.file) }}
+            {{ form_widget(form.file) }}
+        </div>
+        <div class="col-md-12">
+            {{ form_row(form.submit) }}
+        </div>
         {{ form_end(form) }}
     </turbo-frame>
 

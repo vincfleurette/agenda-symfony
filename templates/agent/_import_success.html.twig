@@ -1,50 +1,58 @@
-<turbo-frame id="import_frame">
-    {% if data is not empty %}
-        <div>
-            <a href="{{ path('agent_export_excel', { filePath: filePath, sheetIndex: sheetIndex }) }}" target="_blank" class="btn btn-primary">
-                Télécharger en Excel
-            </a>
-        </div>
+{# templates/agent/choose_sheet.html.twig #}
+{% extends 'base.html.twig' %}
+{% block title %}
+    {{ 'Disponibility'|trans }}
+{% endblock %}
+{% block body %}
+    <turbo-frame id="import_frame">
+        {% if data is not empty %}
+            <div class="mb-5">
+                <a href="{{ path('agent_export_excel', { filePath: filePath, sheetIndex: sheetIndex }) }}" target="_blank" class="btn btn-primary btn-lg px-4">
+                    {{ 'downloadExcel'|trans }}
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered  table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>{{ 'day'|trans }}</th>
+                            <th>{{ 'date'|trans }}</th>
+                            <th>{{ 'team'|trans }}</th>
+                            {% for i in 1..maxSpvs %}
+                                <th>{{ i }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for day in data %}
+                            <tr>
+                                <td>{{ day.date }}</td>
+                                <td>{{ day.equipe }}</td>
+                                {# Render Full-Day SPVs #}
+                                {% for spv in day.sortedDispo.fullDay %}
+                                    <td style="background-color: {{ spv.color ? spv.color : 'transparent' }}; padding: 4px; margin-bottom: 2px;">
+                                        {{ spv['nom spv']|upper }}
+                                    </td>
+                                {% endfor %}
 
-        <table class="table-bordered">
-            <thead>
-                <tr>
-                    <th>Jour</th>
-                    <th>Date</th>
-                    <th>Équipe</th>
-                    {% for i in 1..maxSpvs %}
-                        <th>{{ i }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for day in data %}
-                    <tr>
-                        <td>{{ day.date }}</td>
-                        <td>{{ day.equipe }}</td>
-                        {# Render Full-Day SPVs #}
-                        {% for spv in day.sortedDispo.fullDay %}
-                            <td style="background-color: {{ spv.color ? spv.color : 'transparent' }}; padding: 4px; margin-bottom: 2px;">
-                                {{ spv['nom spv']|upper }}
-                            </td>
+                                {# Render Half-Day SPVs #}
+                                {% for spv in day.sortedDispo.halfDay %}
+                                    <td style="background-color: {{ spv.color ? spv.color : 'transparent' }}; padding: 4px; margin-bottom: 2px;">
+                                        {{ spv['nom spv']|upper }}
+                                    </td>
+                                {% endfor %}
+                                {# Add empty cells if needed to align rows with the maximum SPV count #}
+                                {% set totalSpvs = day.sortedDispo.fullDay|length + day.sortedDispo.halfDay|length %}
+                                {% for i in totalSpvs+1..maxSpvs %}
+                                    <td></td>
+                                {% endfor %}
+                            </tr>
                         {% endfor %}
-
-                        {# Render Half-Day SPVs #}
-                        {% for spv in day.sortedDispo.halfDay %}
-                            <td style="background-color: {{ spv.color ? spv.color : 'transparent' }}; padding: 4px; margin-bottom: 2px;">
-                                {{ spv['nom spv']|upper }}
-                            </td>
-                        {% endfor %}
-                        {# Add empty cells if needed to align rows with the maximum SPV count #}
-                        {% set totalSpvs = day.sortedDispo.fullDay|length + day.sortedDispo.halfDay|length %}
-                        {% for i in totalSpvs+1..maxSpvs %}
-                            <td></td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>Aucune donnée n'a été importée.</p>
-    {% endif %}
-</turbo-frame>
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>{{ 'noData'|trans }}</p>
+        {% endif %}
+    </turbo-frame>
+{% endblock %}

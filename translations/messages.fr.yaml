@@ -1,0 +1,16 @@
+SPV_Availability_Management: "Gestion Disponibilités SPV"
+Import_an_Excel_file: "Importer un fichier Excel"
+chooseSheet: "Choisir une Feuille Excel"
+chooseSheetAnalyse: "Choisissez une feuille à analyser"
+Analyse: "Analyser"
+
+formExcelFile: "Fichier Excel"
+formExcelImportFile: "Importer le fichier Excel"
+
+formSheetChoice: "Choisissez une feuille"
+formSheetChoiceSeelct: "Sélectionnez une feuille"
+downloadExcel: "Télécharger en Excel"
+day: "Jour"
+date: "Date"
+team: "Équipe"
+noData: "Aucune donnée n'a été importée."

@@ -1,14 +1,21 @@
 {# templates/agent/choose_sheet.html.twig #}
 {% extends 'base.html.twig' %}
-{% block title %}Choisir une Feuille
+{% block title %}
+    {{ 'chooseSheet'|trans }}
 {% endblock %}
 {% block body %}
-<turbo-frame id="import_frame">
-    <h1>Choisissez une feuille à analyser</h1>
+    <turbo-frame id="import_frame">
+        <h1>{{ 'chooseSheetAnalyse'|trans }}</h1>
 
-    {{ form_start(sheetForm, { 'action': path('agent_choose_sheet'), 'attr': { 'data-turbo-frame': 'import_frame' } }) }}
-        {{ form_widget(sheetForm) }}
-        <button type="submit">Analyser</button>
-    {{ form_end(sheetForm) }}
-</turbo-frame>
+        {{ form_start(sheetForm, { 'action': path('agent_choose_sheet'), 'attr': { 'data-turbo-frame': 'import_frame', 'class': 'row g-3' } }) }}
+        <div class="input-group mb-3">
+            {{ form_label(sheetForm) }}
+            {{ form_widget(sheetForm) }}
+        </div>
+        <div class="col-md-12">
+            <button type="submit" class="btn btn-primary">{{ 'Analyse'|trans }}</button>
+        </div>
+        {{ form_end(sheetForm) }}
+
+    </turbo-frame>
 {% endblock %}

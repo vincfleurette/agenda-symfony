@@ -9,10 +9,12 @@ use Psr\Log\LoggerInterface;
 class ExcelImportService
 {
     private LoggerInterface $logger;
+    private string $currentYear;
 
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
+        $this->currentYear = date('Y');
     }
 
     /**
@@ -60,6 +62,18 @@ class ExcelImportService
         }
     }
 
+    private function extractYear(string $input): ?string
+    {
+        $year = substr($input, -4);
+
+        // Vérifie si les 4 derniers caractères sont une année valide
+        if (ctype_digit($year) && (int) $year >= 1000 && (int) $year <= 9999) {
+            return $year;
+        }
+
+        return null; // Retourne null si ce n'est pas une année valide
+    }
+
     /**
      * Validate the sheet index and return the selected sheet.
      */
@@ -71,6 +85,7 @@ class ExcelImportService
         }
 
         $sheet = $spreadsheet->getSheetByName($sheetNames[$sheetIndex]);
+        $this->currentYear = $this->extractYear($sheetNames[$sheetIndex]);
         if (!$sheet) {
             throw new \Exception('Impossible de charger la feuille spécifiée : '.$sheetNames[$sheetIndex]);
         }
@@ -128,7 +143,7 @@ class ExcelImportService
         int $sheetIndex,
     ): array {
         $headers = [];
-        $year = date('Y'); // Année actuelle, ajustez si nécessaire
+        $year = $this->currentYear; // Année actuelle, ajustez si nécessaire
 
         foreach ($sheet->getColumnIterator($firstDateColumn) as $column) {
             $columnIndex = $column->getColumnIndex();

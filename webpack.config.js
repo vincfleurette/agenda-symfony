@@ -51,10 +51,12 @@ Encore
     .configureBabelPresetEnv((config) => {
         config.useBuiltIns = "usage";
         config.corejs = "3.38";
-    });
+    })
+    .enableSassLoader()
+    .enableIntegrityHashes(Encore.isProduction());
 
 // enables Sass/SCSS support
-//.enableSassLoader()
+//
 
 // uncomment if you use TypeScript
 //.enableTypeScriptLoader()
