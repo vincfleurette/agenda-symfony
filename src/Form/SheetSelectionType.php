@@ -23,11 +23,11 @@ class SheetSelectionType extends AbstractType
     ): void {
         $builder->add('sheet', ChoiceType::class, [
             'choices' => array_flip($options['sheets']), // Map 'sheets' to the dropdown
-            'label' => $this->translator->trans('formSheetChoice'),
+            'label' => false,
             'placeholder' => $this->translator->trans('formSheetChoiceSeelct'),
             'required' => true,
             'attr' => [
-                'class' => 'form-control',
+                'class' => 'form-select',
             ],
             'label_attr' => [
                 'class' => 'input-group-text',
