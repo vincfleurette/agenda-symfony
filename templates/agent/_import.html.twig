@@ -10,7 +10,12 @@
 
     <turbo-frame id="import_frame">
         <h1 class="text-body-emphasis">{{ 'Import_an_Excel_file'|trans }}</h1>
-        <p class="fs-5 col-md-8">Quickly and easily get started with Bootstrap's compiled, production-ready files with this barebones example featuring some basic HTML and helpful links. Download all our examples to get started.</p>
+        <p class="fs-5 col-md-8">
+            Documentation : Importation de fichiers Excel
+                        1.	Sélectionnez un fichier Excel au format .xlsx via le bouton “Choisir un fichier”.
+                        2.	Validez en cliquant sur “Importer”.
+                        3.	Si le fichier est valide, vous pourrez choisir une feuille pour traiter les données. En cas d’erreur, vérifiez le format et réessayez.
+        </p>
         {{ form_start(form, { 'attr': { 'data-turbo-frame': 'import_frame', 'class': 'row g-3' } }) }}
         <div class="input-group mb-3">
             {{ form_label(form.file) }}

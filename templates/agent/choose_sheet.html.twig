@@ -6,7 +6,12 @@
 {% block body %}
     <turbo-frame id="import_frame">
         <h1>{{ 'chooseSheetAnalyse'|trans }}</h1>
-        <p class="fs-5 col-md-8">Quickly and easily get started with Bootstrap's compiled, production-ready files with this barebones example featuring some basic HTML and helpful links. Download all our examples to get started.</p>
+        <p class="fs-5 col-md-8">
+            Documentation : Choix de la feuille Excel
+                        1.	Sélectionnez une feuille parmi celles disponibles dans le fichier importé.
+                        2.	Confirmez votre choix en cliquant sur “Valider”.
+                        3.	Vous serez redirigé pour afficher ou exporter les données de la feuille sélectionnée.
+        </p>
         {{ form_start(sheetForm, { 'action': path('agent_choose_sheet'), 'attr': { 'data-turbo-frame': 'import_frame', 'class': 'row g-3' } }) }}
         <div class="input-group mb-12">
             {{ form_widget(sheetForm) }}
